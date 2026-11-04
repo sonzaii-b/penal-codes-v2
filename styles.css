@@ -58,3 +58,10 @@ pre{max-height:180px;overflow-y:auto}
 #results::-webkit-scrollbar-thumb:hover,#chargeList::-webkit-scrollbar-thumb:hover,pre::-webkit-scrollbar-thumb:hover{background:#4d576b}
 
 footer{max-width:1100px;margin:0 auto;padding:0 20px 28px;color:var(--muted);font-size:12px;text-align:center}
+#chargeList li.grp{color:var(--lav);font-size:12px;font-weight:600;padding:10px 0 4px 10px;border-bottom:0}
+.small{color:var(--muted);font-size:13px;margin:12px 0}
+#chargeList li.grp{display:flex;justify-content:space-between;gap:12px;cursor:pointer;user-select:none}
+#chargeList li.grp:hover{color:#d3cff5}
+.grp .pv{display:none;color:var(--muted);font-weight:400;text-align:right}
+.grp:hover .pv,.grp:focus-visible .pv{display:block}
+.grp.open .pv{display:none}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wisconsin Penal Codes</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><h1>Wisconsin Penal Codes</h1><p id="status">Loading codes…</p></header>
+<main>
+  <section class="panel" id="lookup">
+    <h2>Penal Code Lookup</h2>
+    <input id="search" type="search" placeholder="Search by code, name, or description" autocomplete="off">
+    <p class="hint">Hold Shift and click a code to add it without the preview.</p>
+    <ul id="results"></ul>
+  </section>
+  <section class="panel" id="preview">
+    <h2>Preview</h2>
+    <div id="previewBody"><p class="empty">Select a code to preview it.</p></div>
+  </section>
+  <section class="panel" id="charges">
+    <h2>Charges</h2>
+    <ul id="chargeList"></ul>
+  </section>
+  <section class="panel" id="summary">
+    <h2>Summary</h2>
+    <pre id="summaryText"></pre>
+    <div class="actions">
+      <button id="copy" class="copy">Copy Information</button>
+      <button id="clear" class="clear">Clear</button>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

@@ -21,14 +21,22 @@ function parseCSV(t) {
 }
 
 function buildCodes(rows) {
-  let imp = -1;
-  rows.forEach(r => r.forEach((c, i) => { if (/impound/i.test(c) && imp < 0) imp = i; }));
+  let imp = -1, dbl = -1;
+  const isCode = c => /^\(\d+\)\d+$/.test(c.trim());
+  rows.forEach(r => {
+    if (r.some(isCode)) return;
+    r.forEach((c, i) => {
+      const t = c.trim(); if (t.length > 30) return;
+      if (/impound/i.test(t) && imp < 0) imp = i;
+      if (/double/i.test(t) && dbl < 0) dbl = i;
+    });
+  });
   const out = [];
   for (const r of rows) {
     const cells = r.map(c => c.replace(/\s+/g, " ").trim());
     const ci = cells.findIndex(c => /^\(\d+\)\d+$/.test(c));
     if (ci < 0) continue;
-    const rest = cells.map((c, i) => [i, c]).filter(([i, c]) => i > ci && c && i !== imp);
+    const rest = cells.map((c, i) => [i, c]).filter(([i, c]) => i > ci && c && i !== imp && i !== dbl);
     const [name, cls, desc] = [rest[0]?.[1] || "", rest[1]?.[1] || "", rest[2]?.[1] || ""];
     const pen = (rest.slice(3).find(([, c]) => /\$\s*\d|jail/i.test(c)) || [0, ""])[1];
     const f = pen.match(/\$\s*([\d,]+)/);
@@ -38,6 +46,7 @@ function buildCodes(rows) {
       fine: f ? parseInt(f[1].replace(/,/g, ""), 10) : 0,
       jail: j ? parseInt(j[1], 10) : 0,
       impound: imp >= 0 && /^(yes|true|y|x|✓|✔)/i.test(cells[imp]),
+      canDouble: dbl < 0 ? true : /^(yes|true|y|x|✓|✔)/i.test(cells[dbl]),
       flag: /officer discretion|see note|per escapee/i.test(pen)
     });
   }
@@ -79,10 +88,10 @@ function renderPreview() {
       <div><b>${c.impound ? "Yes" : "No"}</b><span>Impoundment</span></div>
     </div>
     ${c.flag ? `<div class="note">Listed penalty: ${c.pen}. Check the sheet notes before charging.</div>` : ""}
-    <label class="dbl"><input type="checkbox" id="dbl"> Double the fine</label>
+    ${c.canDouble ? '<label class="dbl"><input type="checkbox" id="dbl"> Double the fine</label>' : '<p class="small">Double fines aren\'t permitted for this charge.</p>'}
     <button class="add" id="addBtn" >Add to Charges</button>`;
-  $("dbl").onchange = e => { $("pvFine").textContent = c.fine ? money(c.fine * (e.target.checked ? 2 : 1)) : "None"; };
-  $("addBtn").onclick = () => { addCharge(c, $("dbl").checked); selected = null; renderResults(); renderPreview(); };
+  if (c.canDouble) $("dbl").onchange = e => { $("pvFine").textContent = c.fine ? money(c.fine * (e.target.checked ? 2 : 1)) : "None"; };
+  $("addBtn").onclick = () => { addCharge(c, c.canDouble && $("dbl").checked); selected = null; renderResults(); renderPreview(); };
 }
 
 function addCharge(c, doubled) {
@@ -90,10 +99,30 @@ function addCharge(c, doubled) {
   renderAll();
 }
 
+const GROUP_AT = 6;
+const openGroups = new Set();
 function renderCharges() {
   const ul = $("chargeList");
   ul.innerHTML = charges.length ? "" : '<li class="empty">No charges added yet.</li>';
-  charges.forEach((c, i) => {
+  const chap = c => +c.code.match(/^\((\d+)\)/)[1];
+  const items = charges.map((c, i) => ({ c, i }));
+  const grouped = charges.length > GROUP_AT;
+  if (grouped) items.sort((a, b) => chap(a.c) - chap(b.c) || a.i - b.i);
+  let last = null;
+  items.forEach(({ c, i }) => {
+    if (grouped && chap(c) !== last) {
+      last = chap(c);
+      const g = last, grp = items.filter(o => chap(o.c) === g), isOpen = openGroups.has(g);
+      const h = document.createElement("li");
+      h.className = "grp" + (isOpen ? " open" : "");
+      h.tabIndex = 0; h.setAttribute("role", "button"); h.setAttribute("aria-expanded", isOpen);
+      h.innerHTML = `<span>${isOpen ? "▾" : "▸"} Chapter ${g} · ${grp.length}</span><span class="pv">${grp.map(o => o.c.code).join(", ")}</span>`;
+      const tog = () => { isOpen ? openGroups.delete(g) : openGroups.add(g); renderCharges(); };
+      h.onclick = tog;
+      h.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tog(); } };
+      ul.appendChild(h);
+    }
+    if (grouped && !openGroups.has(chap(c))) return;
     const li = document.createElement("li");
     li.className = clsKey(c.cls);
     li.innerHTML = `<span class="nm">${c.code} — ${c.name}${c.doubled ? " <small>(doubled fine)</small>" : ""}</span>`;

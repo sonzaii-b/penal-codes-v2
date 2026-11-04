@@ -56,3 +56,5 @@ pre{max-height:180px;overflow-y:auto}
 #results::-webkit-scrollbar-track,#chargeList::-webkit-scrollbar-track,pre::-webkit-scrollbar-track{background:transparent}
 #results::-webkit-scrollbar-thumb,#chargeList::-webkit-scrollbar-thumb,pre::-webkit-scrollbar-thumb{background:#3a4252;border-radius:3px}
 #results::-webkit-scrollbar-thumb:hover,#chargeList::-webkit-scrollbar-thumb:hover,pre::-webkit-scrollbar-thumb:hover{background:#4d576b}
+
+footer{max-width:1100px;margin:0 auto;padding:0 20px 28px;color:var(--muted);font-size:12px;text-align:center}

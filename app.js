@@ -44,6 +44,7 @@ function buildCodes(rows) {
   return out;
 }
 
+const clsKey = c => /felony/i.test(c) ? "felony" : /misdemeanor/i.test(c) ? "misd" : /citation/i.test(c) ? "cit" : "";
 const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 function renderResults() {
@@ -54,8 +55,8 @@ function renderResults() {
   list.forEach(c => {
     const li = document.createElement("li");
     li.tabIndex = 0;
-    li.className = selected?.code === c.code ? "sel" : "";
-    li.innerHTML = `<span class="code">${c.code}</span><span>${c.name}</span><span class="tag">${c.cls}</span>`;
+    li.className = (selected?.code === c.code ? "sel " : "") + clsKey(c.cls);
+    li.innerHTML = `<span class="code">${c.code}</span><span>${c.name}</span><span class="tag ${clsKey(c.cls)}">${c.cls}</span>`;
     const act = e => e.shiftKey ? addCharge(c, false) : select(c);
     li.onclick = act;
     li.onkeydown = e => { if (e.key === "Enter") act(e); };
@@ -70,7 +71,7 @@ function renderPreview() {
   if (!c) { el.innerHTML = '<p class="empty">Select a code to preview it.</p>'; return; }
   el.innerHTML = `
     <p class="pv-title">${c.code} — ${c.name}</p>
-    <p class="pv-sub">${c.cls}</p>
+    <p class="pv-sub"><span class="tag ${clsKey(c.cls)}">${c.cls}</span></p>
     <p>${c.desc}</p>
     <div class="stats">
       <div><b id="pvFine">${c.fine ? money(c.fine) : "None"}</b><span>Fine</span></div>
@@ -94,6 +95,7 @@ function renderCharges() {
   ul.innerHTML = charges.length ? "" : '<li class="empty">No charges added yet.</li>';
   charges.forEach((c, i) => {
     const li = document.createElement("li");
+    li.className = clsKey(c.cls);
     li.innerHTML = `<span class="nm">${c.code} — ${c.name}${c.doubled ? " <small>(doubled fine)</small>" : ""}</span>`;
     const x = document.createElement("button");
     x.className = "x"; x.textContent = "×"; x.title = "Remove charge"; x.setAttribute("aria-label", "Remove " + c.name);

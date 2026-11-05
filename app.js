@@ -177,8 +177,30 @@ $("clear").onclick = () => { charges = []; renderAll(); };
 $("search").oninput = renderResults;
 $("search").onkeydown = e => { if (e.key === "Enter") { const first = $("results").querySelector("li[tabindex]"); if (first) first.click(); } };
 
+function loadSheet() {
 fetch(URL_CSV).then(r => { if (!r.ok) throw 0; return r.text(); }).then(t => {
   codes = buildCodes(parseCSV(t));
   $("status").textContent = codes.length ? `${codes.length} codes loaded from the sheet` : "No codes found in the sheet.";
   renderAll();
 }).catch(() => { $("status").textContent = "Couldn't load the sheet. Make sure it's shared as “Anyone with the link can view.”"; renderAll(); });
+}
+
+// ---- Login gate (runs on every page load; nothing is stored)
+const PW_HASH = "e9c322d1be35f3ce17c29028d1780fc0c90b95a2f3e677b0e86120d278cfafb5";
+async function sha256(t) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+function loginError(msg) {
+  const e = $("loginErr"); e.textContent = msg; e.hidden = false;
+  const pw = $("pw"); pw.classList.remove("shake"); void pw.offsetWidth; pw.classList.add("shake");
+  pw.value = ""; pw.focus();
+}
+$("loginForm").onsubmit = async e => {
+  e.preventDefault();
+  if (!window.crypto || !crypto.subtle) return loginError("Sign-in needs a secure page (https). Open the site from its GitHub Pages link.");
+  if ((await sha256($("pw").value)) !== PW_HASH) return loginError("Incorrect password. Please try again.");
+  $("loginErr").hidden = true; $("loginForm").hidden = true; $("loading").hidden = false;
+  setTimeout(() => { $("login").hidden = true; $("app").hidden = false; loadSheet(); }, 1700);
+};
+window.addEventListener("pageshow", e => { if (e.persisted) location.reload(); });

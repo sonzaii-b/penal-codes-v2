@@ -97,7 +97,8 @@ function renderPreview() {
 const CAP = 20, WARN_AT = 15;
 
 function toast(msg, type) {
-  const box = $("toasts");
+  let box = $("toasts");
+  if (!box) { box = document.createElement("div"); box.id = "toasts"; document.body.prepend(box); }
   box.querySelectorAll("." + type).forEach(t => t.remove());
   const t = document.createElement("div");
   t.className = "toast " + type; t.setAttribute("role", "status"); t.title = "Click to dismiss";

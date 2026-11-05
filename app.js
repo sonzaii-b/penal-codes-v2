@@ -91,12 +91,30 @@ function renderPreview() {
     ${c.canDouble ? '<label class="dbl"><input type="checkbox" id="dbl"> Double the fine</label>' : '<p class="small">Double fines aren\'t permitted for this charge.</p>'}
     <button class="add" id="addBtn" >Add to Charges</button>`;
   if (c.canDouble) $("dbl").onchange = e => { $("pvFine").textContent = c.fine ? money(c.fine * (e.target.checked ? 2 : 1)) : "None"; };
-  $("addBtn").onclick = () => { addCharge(c, c.canDouble && $("dbl").checked); selected = null; renderResults(); renderPreview(); };
+  $("addBtn").onclick = () => { if (addCharge(c, c.canDouble && $("dbl").checked)) { selected = null; renderResults(); renderPreview(); } };
+}
+
+const CAP = 20, WARN_AT = 15;
+
+function toast(msg, type) {
+  const box = $("toasts");
+  box.querySelectorAll("." + type).forEach(t => t.remove());
+  const t = document.createElement("div");
+  t.className = "toast " + type; t.setAttribute("role", "status"); t.title = "Click to dismiss";
+  t.innerHTML = `<span>${msg}</span><small>Click to dismiss</small>`;
+  const close = () => { t.classList.add("out"); setTimeout(() => t.remove(), 200); };
+  t.onclick = close;
+  box.appendChild(t);
+  setTimeout(close, 5000);
 }
 
 function addCharge(c, doubled) {
+  if (charges.length >= CAP) { toast(`Charge limit reached — you can't add more than ${CAP} charges.`, "danger"); return false; }
   charges.push({ ...c, doubled });
   renderAll();
+  if (charges.length === CAP) toast(`You've reached the cap of ${CAP} charges.`, "danger");
+  else if (charges.length === WARN_AT) toast(`You've reached ${WARN_AT} charges — ${CAP - WARN_AT} away from the cap.`, "warn");
+  return true;
 }
 
 const GROUP_AT = 6;

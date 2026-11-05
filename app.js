@@ -187,19 +187,38 @@ fetch(URL_CSV).then(r => { if (!r.ok) throw 0; return r.text(); }).then(t => {
 
 // ---- Login gate (runs on every page load; nothing is stored)
 const PW_HASH = "e9c322d1be35f3ce17c29028d1780fc0c90b95a2f3e677b0e86120d278cfafb5";
+const USER_PREFIX = "gvrn-ps:";
 async function sha256(t) {
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
   return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
 }
-function loginError(msg) {
+function loginError(msg, field) {
   const e = $("loginErr"); e.textContent = msg; e.hidden = false;
-  const pw = $("pw"); pw.classList.remove("shake"); void pw.offsetWidth; pw.classList.add("shake");
-  pw.value = ""; pw.focus();
+  const f = $(field); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
+  if (field === "pw") f.value = "";
+  f.focus();
 }
 $("loginForm").onsubmit = async e => {
   e.preventDefault();
-  if (!window.crypto || !crypto.subtle) return loginError("Sign-in needs a secure page (https). Open the site from its GitHub Pages link.");
-  if ((await sha256($("pw").value)) !== PW_HASH) return loginError("Incorrect password. Please try again.");
+  const name = $("ru").value.trim();
+  if (!window.crypto || !crypto.subtle) return loginError("Sign-in needs a secure page (https). Open the site from its GitHub Pages link.", "pw");
+  if (!name) return loginError("Enter your Roblox username.", "ru");
+  if ((await sha256($("pw").value)) !== PW_HASH) return loginError("Incorrect password. Please try again.", "pw");
+  $("loginBtn").disabled = true;
+  let users;
+  try {
+    const r = await fetch("usernames.json?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw 0;
+    users = (await r.json()).users;
+    if (!Array.isArray(users)) throw 0;
+  } catch {
+    $("loginBtn").disabled = false;
+    return loginError("Couldn't verify your username right now. Please try again in a few minutes.", "ru");
+  }
+  if (!users.includes(await sha256(USER_PREFIX + name.toLowerCase()))) {
+    $("loginBtn").disabled = false;
+    return loginError("That username wasn't found in the Public Services server.", "ru");
+  }
   $("loginErr").hidden = true; $("loginForm").hidden = true; $("loading").hidden = false;
   setTimeout(() => { $("login").hidden = true; $("app").hidden = false; loadSheet(); }, 1700);
 };

@@ -14,9 +14,11 @@
   <form id="loginForm" class="card" autocomplete="off">
     <img src="favicon.png" alt="GvCN logo" width="96" height="96">
     <h1>State of Wisconsin | Penal Codes Calculator</h1>
-    <p class="sub">Enter the password to continue.</p>
+    <p class="sub">Enter your Roblox username and the password to continue.</p>
+    <label class="sr" for="ru">Roblox username</label>
+    <input id="ru" type="text" placeholder="Roblox Username" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
     <label class="sr" for="pw">Password</label>
-    <input id="pw" type="password" placeholder="Password" autocomplete="off" autofocus>
+    <input id="pw" type="password" placeholder="Password" autocomplete="off">
     <p id="loginErr" role="alert" hidden>Incorrect password. Please try again.</p>
     <button type="submit" id="loginBtn">Enter</button>
   </form>

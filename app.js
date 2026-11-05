@@ -135,7 +135,7 @@ function renderCharges() {
       const h = document.createElement("li");
       h.className = "grp" + (isOpen ? " open" : "");
       h.tabIndex = 0; h.setAttribute("role", "button"); h.setAttribute("aria-expanded", isOpen);
-      h.innerHTML = `<span>${isOpen ? "▾" : "▸"} Chapter ${g} · ${grp.length}</span><span class="pv">${grp.map(o => o.c.code).join(", ")}</span>`;
+      h.innerHTML = `<span>${isOpen ? "▾" : "▸"} Chapter ${g} • ${grp.length} charge${grp.length === 1 ? "" : "s"}</span><span class="pv">${grp.map(o => o.c.code).join(", ")}</span>`;
       const tog = () => { isOpen ? openGroups.delete(g) : openGroups.add(g); renderCharges(); };
       h.onclick = tog;
       h.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tog(); } };

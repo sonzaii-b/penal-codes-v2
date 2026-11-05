@@ -10,6 +10,21 @@
 </head>
 <body>
 <div id="toasts"></div>
+<section id="login">
+  <form id="loginForm" class="card" autocomplete="off">
+    <img src="favicon.png" alt="" width="64" height="64">
+    <h1>Wisconsin Penal Codes</h1>
+    <p class="sub">Enter the password to continue.</p>
+    <label class="sr" for="pw">Password</label>
+    <input id="pw" type="password" placeholder="Password" autocomplete="off" autofocus>
+    <p id="loginErr" role="alert" hidden>Incorrect password. Please try again.</p>
+    <button type="submit" id="loginBtn">Enter</button>
+  </form>
+  <div id="loading" class="card" hidden>
+    <div class="spin"></div><p>Signing in…</p><div class="bar"><i></i></div>
+  </div>
+</section>
+<div id="app" hidden>
 <header><h1>Wisconsin Penal Codes</h1><p id="status">Loading codes…</p></header>
 <main>
   <section class="panel" id="lookup">
@@ -35,6 +50,7 @@
     </div>
   </section>
 </main>
+</div>
 <footer>Made by ssonzaii; property of GVCN Public Services.</footer>
 <script src="app.js"></script>
 </body>
